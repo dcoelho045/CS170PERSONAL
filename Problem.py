@@ -6,6 +6,9 @@ class Problem:
         self.initial_state = initial_state
         self.goal_state = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
 
+    # uses a priority queue (frontier) to explore nodes with the lowest total cost (cost + heuristic)
+    # continues until the goal state is reached or no more nodes are left to explore
+    # If a solution is found, it returns the solution path. Otherwise, it returns None.
     def solve(self):
         initial_node = Node(self.initial_state)
         frontier = []
@@ -26,6 +29,8 @@ class Problem:
 
         return None
 
+    # generates successor nodes for a given node by moving the blank tile (represented as 0) in all possible directions (up, down, left, right)
+    # creates a new Node object for each valid successor state and adds it to the list of successors
     def get_successors(self, node):
         successors = []
         zero_row, zero_col = self.get_zero_position(node.state)
@@ -37,6 +42,8 @@ class Problem:
 
         return successors
 
+    # calculates the misplaced tile heuristic for a given state
+    # counts the number of tiles that are not in their goal position and returns this count as the heuristic value
     def misplacedHeuristic(self, state):
         # Misplaced Tile Heuristic
         misplaced = 0
@@ -57,13 +64,15 @@ class Problem:
     #                 total_distance += abs(i - goal_row) + abs(j - goal_col)
     #     return total_distance
 
-
+    
+    # finds the row and column index of the blank tile (0) in a given state and returns them
     def get_zero_position(self, state):
         for i in range(3):
             for j in range(3):
                 if state[i][j] == 0:
                     return i, j
 
+    # determines the valid actions (up, down, left, right) that can be applied to the blank tile based on its current position
     def get_valid_actions(self, zero_row, zero_col):
         actions = []
         if zero_row > 0:
@@ -76,6 +85,7 @@ class Problem:
             actions.append('right')
         return actions
 
+    # generates a new state by applying an action to the blank tile in the current state
     def generate_new_state(self, state, zero_row, zero_col, action):
         new_state = [row.copy() for row in state]
         if action == 'up':
@@ -92,6 +102,7 @@ class Problem:
             new_state[zero_row][zero_col + 1] = 0
         return new_state
 
+    # returns the solution path from the initial state to a given node by following the parent pointers from the given node to the root node
     def get_solution_path(self, node):
         path = []
         current_node = node
