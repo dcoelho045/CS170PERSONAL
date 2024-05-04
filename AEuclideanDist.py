@@ -8,7 +8,7 @@ class AEuclideanDist:
 
     # uses a priority queue (frontier) to explore nodes with the lowest total cost (cost + heuristic)
     # continues until the goal state is reached or no more nodes are left to explore
-    # If a solution is found, it returns the solution path. Otherwise, it returns None.
+    # If a solution is found, it returns the solution path, the cost per node, and the heuristic values
     def solveAEuclideanDist(self):
         initial_node = Node(self.initial_state)
         frontier = []
@@ -19,15 +19,19 @@ class AEuclideanDist:
             _, current_node = heapq.heappop(frontier)
 
             if current_node.state == self.goal_state:
-                return self.get_solution_path(current_node)
+                path, costPerNodePath, hn = self.get_solution_path(current_node)
+                return path, costPerNodePath, hn
 
             explored.add(current_node)
 
             for successor in self.get_successors(current_node):
                 if successor not in explored:
                     heapq.heappush(frontier, (successor.cost + self.euclideanHeuristic(successor.state), successor))
+            
+            if current_node.cost > 50:
+                break
 
-        return None
+        return None, None, None
 
     # generates successor nodes for a given node by moving the blank tile (represented as 0) in all possible directions (up, down, left, right)
     # creates a new Node object for each valid successor state and adds it to the list of successors
@@ -92,10 +96,15 @@ class AEuclideanDist:
         return new_state
 
     # returns the solution path from the initial state to a given node by following the parent pointers from the given node to the root node
+    # returns the cost for each node and missing tile heuristic for that state
     def get_solution_path(self, node):
         path = []
+        costPerNodePath = []
+        hn = []
         current_node = node
         while current_node:
             path.append(current_node.state)
+            costPerNodePath.append(current_node.cost)
+            hn.append(self.euclideanHeuristic(current_node.state))
             current_node = current_node.parent
-        return path[::-1]
+        return path[::-1], costPerNodePath[::-1], hn[::-1]

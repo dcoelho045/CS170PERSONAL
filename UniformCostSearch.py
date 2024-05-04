@@ -6,6 +6,9 @@ class UniformCostSearch:
         self.initial_state = initial_state
         self.goal_state = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
 
+    # uses a priority queue (heapq) to explore nodes with the lowest total cost (cost)
+    # continues until the goal state is reached or no more nodes are left to explore
+    # If a solution is found, it returns the solution path, the cost per node, and the heuristic values
     def solveUCS(self):
         initial_node = Node(self.initial_state)
         frontier = []
@@ -14,9 +17,9 @@ class UniformCostSearch:
 
         while frontier:
             _, current_node = heapq.heappop(frontier)
-            print("current_node cost: ", current_node.cost)
             if current_node.state == self.goal_state:
-                return self.get_solution_path(current_node) 
+                path, costPerNodePath, hn = self.get_solution_path(current_node)
+                return  path, costPerNodePath, hn
 
             explored.add(current_node)
 
@@ -24,8 +27,13 @@ class UniformCostSearch:
                 if successor not in explored:
                     heapq.heappush(frontier, (successor.cost, successor))
 
-        return None
+            if current_node.cost > 50:
+                break
 
+        return None, None, None
+
+    # generates successor nodes for a given node by moving the blank tile (represented as 0) in all possible directions (up, down, left, right)
+    # creates a new Node object for each valid successor state and adds it to the list of successors
     def get_successors(self, node):
         successors = []
         zero_row, zero_col = self.get_zero_position(node.state)
@@ -37,12 +45,14 @@ class UniformCostSearch:
 
         return successors
 
+    # finds the row and column index of the blank tile (0) in a given state and returns them
     def get_zero_position(self, state):
         for i in range(3):
             for j in range(3):
                 if state[i][j] == 0:
                     return i, j
 
+    # determines the valid actions (up, down, left, right) that can be applied to the blank tile based on its current position
     def get_valid_actions(self, zero_row, zero_col):
         actions = []
         if zero_row > 0:
@@ -55,6 +65,7 @@ class UniformCostSearch:
             actions.append('right')
         return actions
 
+    # generates a new state by applying an action to the blank tile in the current state
     def generate_new_state(self, state, zero_row, zero_col, action):
         new_state = [row.copy() for row in state]
         if action == 'up':
@@ -71,10 +82,16 @@ class UniformCostSearch:
             new_state[zero_row][zero_col + 1] = 0
         return new_state
 
+    # returns the solution path from the initial state to a given node by following the parent pointers from the given node to the root node
+    # returns the cost for each node
     def get_solution_path(self, node):
         path = []
+        costPerNodePath = []
+        hn = []
         current_node = node
         while current_node:
             path.append(current_node.state)
+            costPerNodePath.append(current_node.cost)
+            hn.append(0)
             current_node = current_node.parent
-        return path[::-1]
+        return path[::-1], costPerNodePath[::-1], hn
