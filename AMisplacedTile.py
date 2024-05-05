@@ -6,9 +6,7 @@ class AMisplacedTile:
         self.initial_state = initial_state
         self.goal_state = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
 
-    # uses a priority queue (frontier) to explore nodes with the lowest total cost (cost + heuristic)
-    # continues until the goal state is reached or no more nodes are left to explore
-    # If a solution is found, it returns the solution path, the cost per node, and the heuristic values
+    # uses a priority queue for forntier to explore nodes with low f(n) = cost + h(n) till a goal state is found
     def solveAmissingTile(self):
         initial_node = Node(self.initial_state)
         frontier = []
@@ -16,33 +14,32 @@ class AMisplacedTile:
         explored = set()
 
         while frontier:
-            _, current_node = heapq.heappop(frontier)
+            _, current = heapq.heappop(frontier)
 
-            if current_node.state == self.goal_state:
-                path, costPerNodePath, hn = self.get_solution_path(current_node)
+            if current.state == self.goal_state:
+                path, costPerNodePath, hn = self.solPath(current)
                 return path, costPerNodePath, hn
 
-            explored.add(current_node)
+            explored.add(current)
 
-            for successor in self.get_successors(current_node):
+            for successor in self.childNode(current):
                 if successor not in explored:
                     heapq.heappush(frontier, (successor.cost + self.misplacedHeuristic(successor.state), successor)) 
 
-            if current_node.cost > 50:
+            if current.cost > 50:
                 break
 
         return None, None, None
 
-    # generates successor nodes for a given node by moving the blank tile (represented as 0) in all possible directions (up, down, left, right)
-    # creates a new Node object for each valid successor state and adds it to the list of successors
-    def get_successors(self, node):
+    # produces child nodes by cheking where zero is, then chekcing where it can move, and then creating the chidlren nodes
+    def childNode(self, node):
         successors = []
-        zero_row, zero_col = self.get_zero_position(node.state)
+        row, colum = self.zeroPos(node.state)
 
-        for action in self.get_valid_actions(zero_row, zero_col):
-            new_state = self.generate_new_state(node.state, zero_row, zero_col, action)
-            new_node = Node(new_state, node, action, node.cost + 1)
-            successors.append(new_node)
+        for action in self.zeroAct(row, colum):
+            newState = self.newNode(node.state, row, colum, action)
+            newNode = Node(newState, node, action, node.cost + 1)
+            successors.append(newNode)
 
         return successors
 
@@ -57,53 +54,52 @@ class AMisplacedTile:
                     misplaced += 1
         return misplaced
     
-    # finds the row and column index of the blank tile (0) in a given state and returns them
-    def get_zero_position(self, state):
+    # finds the row and column of the zero
+    def zeroPos(self, state):
         for i in range(3):
             for j in range(3):
                 if state[i][j] == 0:
                     return i, j
 
-    # determines the valid actions (up, down, left, right) that can be applied to the blank tile based on its current position
-    def get_valid_actions(self, zero_row, zero_col):
+    # determines which ways teh zero can move
+    def zeroAct(self, row, colum):
         actions = []
-        if zero_row > 0:
-            actions.append('up')
-        if zero_row < 2:
-            actions.append('down')
-        if zero_col > 0:
-            actions.append('left')
-        if zero_col < 2:
-            actions.append('right')
+        if row > 0:
+            actions.append('u')
+        if row < 2:
+            actions.append('d')
+        if colum > 0:
+            actions.append('l')
+        if colum < 2:
+            actions.append('r')
         return actions
 
-    # generates a new state by applying an action to the blank tile in the current state
-    def generate_new_state(self, state, zero_row, zero_col, action):
-        new_state = [row.copy() for row in state]
-        if action == 'up':
-            new_state[zero_row][zero_col] = new_state[zero_row - 1][zero_col]
-            new_state[zero_row - 1][zero_col] = 0
-        elif action == 'down':
-            new_state[zero_row][zero_col] = new_state[zero_row + 1][zero_col]
-            new_state[zero_row + 1][zero_col] = 0
-        elif action == 'left':
-            new_state[zero_row][zero_col] = new_state[zero_row][zero_col - 1]
-            new_state[zero_row][zero_col - 1] = 0
-        elif action == 'right':
-            new_state[zero_row][zero_col] = new_state[zero_row][zero_col + 1]
-            new_state[zero_row][zero_col + 1] = 0
-        return new_state
+    # generates a new state refering to where the zero can move from the actiona array
+    def newNode(self, state, row, colum, action):
+        node = [row.copy() for row in state]
+        if action == 'u':
+            node[row][colum] = node[row - 1][colum]
+            node[row - 1][colum] = 0
+        elif action == 'd':
+            node[row][colum] = node[row + 1][colum]
+            node[row + 1][colum] = 0
+        elif action == 'l':
+            node[row][colum] = node[row][colum - 1]
+            node[row][colum - 1] = 0
+        elif action == 'r':
+            node[row][colum] = node[row][colum + 1]
+            node[row][colum + 1] = 0
+        return node
 
-    # returns the solution path from the initial state to a given node by following the parent pointers from the given node to the root node
-    # returns the cost for each node and missing tile heuristic for that state 
-    def get_solution_path(self, node):
+    # returns the solution path from the initial state to a given node by following the parents to the root as well as cost and hn
+    def solPath(self, node):
         path = []
-        current_node = node
+        current = node
         costPerNodePath = []
         hn = []
-        while current_node:
-            path.append(current_node.state)
-            costPerNodePath.append(current_node.cost)
-            hn.append(self.misplacedHeuristic(current_node.state))
-            current_node = current_node.parent
+        while current:
+            path.append(current.state)
+            costPerNodePath.append(current.cost)
+            hn.append(self.misplacedHeuristic(current.state))
+            current = current.parent
         return path[::-1], costPerNodePath[::-1], hn[::-1]
