@@ -62,7 +62,7 @@ if __name__ == "__main__":
 # 5. [[1, 2, 3], [4, 5, 6], [7, 0, 8]] Very Easy
 # 6. [[1, 2, 0], [4, 5, 3], [7, 8, 6]] Easy
 # 7. [[0, 1, 2], [4, 5, 3], [7, 8, 6]] Doable
-# 8. [[8, 7, 1], [6, 0, 2], [5, 4, 3]] Oh Boy - takes to long 10,000 iterations and can't find a solution
+# 8. [[8, 7, 1], [6, 0, 2], [5, 4, 3]] Oh Boy
 
 # CANNOT WORK:
 # [[2, 8, 1], [0, 4, 3], [7, 6, 5]]

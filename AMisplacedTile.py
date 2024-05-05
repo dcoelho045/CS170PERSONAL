@@ -53,7 +53,7 @@ class AMisplacedTile:
         misplaced = 0
         for i in range(3):
             for j in range(3):
-                if state[i][j] != self.goal_state[i][j]:
+                if state[i][j] != self.goal_state[i][j] and state[i][j] != 0:
                     misplaced += 1
         return misplaced
     
