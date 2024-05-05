@@ -14,6 +14,7 @@ class UniformCostSearch:
         explored = set()
 
         while frontier:
+            # frontier is a tuple. _ omits the first var which is the priority of the priority queue. we only care about the current state
             _, current = heapq.heappop(frontier)
             if current.state == self.goal_state:
                 path, costPerNodePath, hn = self.solPath(current)
